@@ -14,6 +14,7 @@ use std::io::ErrorKind::InvalidData;
 use std::mem::MaybeUninit;
 use std::os::raw::c_void;
 use std::os::unix::io::AsRawFd;
+use std::os::fd::RawFd;
 use std::{fmt, io, ptr, result, slice, time};
 
 fn collect_and_send<T, S>(args: T) -> c_int
@@ -40,6 +41,16 @@ pub fn send(args: &[&str]) -> c_int {
 /// Send a simple message to systemd-journald.
 pub fn print(lvl: u32, s: &str) -> c_int {
     send(&[&format!("PRIORITY={}", lvl), &format!("MESSAGE={}", s)])
+}
+
+pub fn open_stream_fd<A: CStrArgument>(identifier: A, level: log::Level, allow_prefix: bool) -> Result<RawFd> {
+    let syslog_level = SyslogLevel::from(level);
+
+    let ident_p = identifier.into_cstr();
+
+    crate::ffi_result(unsafe {
+        ffi::sd_journal_stream_fd(ident_p.as_ref().as_ptr(), syslog_level as c_int, allow_prefix as c_int)
+    })
 }
 
 enum SyslogLevel {

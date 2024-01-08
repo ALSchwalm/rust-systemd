@@ -122,4 +122,6 @@ extern "C" {
 
     pub fn sd_journal_get_catalog(j: *mut sd_journal, text: *mut *const c_char) -> c_int;
     pub fn sd_journal_get_catalog_for_message_id(id: sd_id128_t, ret: *mut *const c_char) -> c_int;
+
+    pub fn sd_journal_stream_fd(identifier: *const c_char, priority: c_int, level_prefix: c_int) -> c_int;
 }
